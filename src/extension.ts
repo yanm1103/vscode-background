@@ -60,6 +60,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     );
 
     context.subscriptions.push(
+        vscode.commands.registerCommand('extension.background.clearWorkspaceProfiles', async () => {
+            const patchApplied = await background.clearWorkspaceProfiles();
+            if (patchApplied !== false) {
+                await vsHelp.reload();
+            }
+        })
+    );
+
+    context.subscriptions.push(
         vscode.commands.registerCommand('extension.background.previewPatch', async () => {
             await background.previewPatch();
         })

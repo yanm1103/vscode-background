@@ -1,7 +1,7 @@
 {
   "name": "background",
-  "displayName": "background",
-  "version": "3.1.0",
+  "displayName": "background (per-project fork)",
+  "version": "3.3.0",
   "description": "Bring background images to your vscode",
   "categories": [
     "Other"
@@ -20,7 +20,7 @@
     "type": "git",
     "url": "https://github.com/shalldie/vscode-background.git"
   },
-  "publisher": "shalldie",
+  "publisher": "twistzero",
   "main": "./dist/extension",
   "scripts": {
     "build": "npm run lint && tsc --noEmit && node esbuild.mjs",
@@ -72,6 +72,11 @@
         "command": "extension.background.uninstall",
         "category": "Background",
         "title": "%extension.background.command.uninstall.title%"
+      },
+      {
+        "command": "extension.background.clearWorkspaceProfiles",
+        "category": "Background",
+        "title": "%extension.background.command.clearWorkspaceProfiles.title%"
       },
       {
         "command": "extension.background.previewPatch",

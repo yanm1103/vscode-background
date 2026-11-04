@@ -1,4 +1,5 @@
 {
+    "extension.background.command.clearWorkspaceProfiles.title": "Forget per-project backgrounds",
     "extension.background.command.info.title": "Welcome to background.",
     "extension.background.command.install.title": "Enable and apply the background.",
     "extension.background.command.disable.title": "Disable the background.",

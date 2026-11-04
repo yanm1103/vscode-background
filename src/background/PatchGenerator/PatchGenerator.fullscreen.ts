@@ -1,4 +1,4 @@
-import { AbsPatchGenerator, css } from './PatchGenerator.base';
+import { AbsPatchGenerator, css, type TSectionCarousel } from './PatchGenerator.base';
 import { ThemePatchGenerator } from './PatchGenerator.theme';
 
 export class FullscreenPatchGeneratorConfig {
@@ -66,43 +66,11 @@ export class FullscreenPatchGenerator<T extends FullscreenPatchGeneratorConfig> 
         });
     }
 
-    protected getScript(): string {
+    protected getCarousel(): TSectionCarousel | null {
         const { images, random, interval } = this.curConfig;
         if (!images.length) {
-            return '';
+            return null;
         }
-        return `
-const imageRules = ${JSON.stringify(this.imageRules)};
-const random = ${random};
-const interval = ${interval};
-
-let curIndex = -1;
-
-const style = (() => {
-    const ele = document.createElement('style');
-    document.head.appendChild(ele);
-    return ele;
-})();
-
-function getNextRule() {
-    if (random) {
-        return imageRules[Math.floor(Math.random() * imageRules.length)];
-    }
-
-    curIndex++;
-    curIndex = curIndex % imageRules.length;
-    return imageRules[curIndex];
-}
-
-function setNextRule() {
-    style.textContent = getNextRule();
-}
-
-if (interval > 0) {
-    setInterval(setNextRule, interval * 1000);
-}
-
-setNextRule();
-        `;
+        return { kind: 'rules', rules: this.imageRules, random, interval };
     }
 }

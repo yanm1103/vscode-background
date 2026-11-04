@@ -1,4 +1,5 @@
 {
+    "extension.background.command.clearWorkspaceProfiles.title": "プロジェクトごとの背景をすべて削除",
     "extension.background.command.info.title": "backgroundへようこそ。",
     "extension.background.command.install.title": "有効にして適用「Background」 を有効にして適用",
     "extension.background.command.disable.title": "「Background」を無効にする。",

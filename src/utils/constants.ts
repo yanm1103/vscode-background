@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 /** 扩展根目录 */
@@ -30,3 +31,9 @@ export const EXTENSION_ID = `${PUBLISHER}.${EXTENSION_NAME}`;
 
 /** 版本临时文件，存放 html 路径、标识初次安装 */
 export const TOUCH_FILE_PATH = path.join(EXT_ROOT, `vscb.${VERSION}.touch`);
+
+/**
+ * Data shared by every window and VS Code profile: workspace profiles and the live state file.
+ * Outside globalStorage because that folder changes with the VS Code profile, while workbench.html is one.
+ */
+export const DATA_DIR = path.join(os.homedir(), '.vscode-background');

@@ -65,7 +65,7 @@ export abstract class AbsPatchFile {
         return EFilePatchType.None;
     }
 
-    protected getContent(): Promise<string> {
+    public getContent(): Promise<string> {
         return fs.promises.readFile(this.filePath, ENCODING);
     }
 

@@ -1,3 +1,5 @@
+import { pathToFileURL } from 'node:url';
+
 import sudo from '@vscode/sudo-prompt';
 
 import { vsc } from './vsc';
@@ -40,5 +42,13 @@ export namespace _ {
      */
     export function withIIFE(source: string) {
         return `;(function() { ${source} })();`;
+    }
+
+    /**
+     * Local path to the url windows can load it from.
+     * `C:\\foo\\bar.svg` => `vscode-file://vscode-app/c%3A/foo/bar.svg`
+     */
+    export function toVscodeFileUrl(filePath: string) {
+        return pathToFileURL(filePath).href.replace('file://', 'vscode-file://vscode-app');
     }
 }

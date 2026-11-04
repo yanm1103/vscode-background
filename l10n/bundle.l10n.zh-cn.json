@@ -2,6 +2,7 @@
     "Show `background` commands": "查看 `background` 命令",
     "Background extension has been uninstalled. See you next time!": "Background 已经卸载，下次见！",
     "Reload vscode": "重载 vscode",
+    "Background settings changed. Apply to take effect.": "背景配置已变更，点击应用生效。",
     "Background@{version} is ready! Apply to take effect.": "Background@{version} 已就绪！点击应用生效。",
     "More": "更多",
     "Background will be disabled.": "Background 会被禁用。",

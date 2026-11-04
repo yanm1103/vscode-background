@@ -1,4 +1,4 @@
-import { AbsPatchGenerator, css } from './PatchGenerator.base';
+import { AbsPatchGenerator, css, type TSectionCarousel } from './PatchGenerator.base';
 import { ThemePatchGenerator } from './PatchGenerator.theme';
 
 export class EditorPatchGeneratorConfig {
@@ -86,56 +86,18 @@ export class EditorPatchGenerator extends AbsPatchGenerator<EditorPatchGenerator
         `);
     }
 
-    protected getScript(): string {
-        const { interval, random } = this.curConfig;
-        return `
-// options
-const styleTemplate = ${JSON.stringify(this.styleTemplate)};
-const cssPlaceholder = '${this.cssPlaceholder}';
-const imageStyles = ${JSON.stringify(this.imageStyles)};
-const interval = ${interval};
-const random = ${random};
-
-// variables
-let curIndex = -1;
-
-const style = (() => {
-    const ele = document.createElement('style');
-    document.head.appendChild(ele);
-    return ele;
-})();
-
-function getNextStyles() {
-    // 如果随机，乱序后返回
-    if (random) {
-        return imageStyles.slice().sort(() => Math.random() - 0.5);
-    }
-
-    // 其它按照自增索引返回
-    curIndex++;
-    curIndex = curIndex % imageStyles.length;
-    return imageStyles.map((_s, index) => {
-        const sIndex = (curIndex + index) % imageStyles.length;
-        return imageStyles[sIndex];
-    });
-}
-
-// replace placeholders with nextStyles in styleTemplate
-function setNextStyles() {
-    let curStyle = styleTemplate;
-    const nextStyles = getNextStyles();
-    for (let i = 0; i < nextStyles.length; i++) {
-        const reg = new RegExp(cssPlaceholder + i + '[^;]+;', 'g');
-        curStyle = curStyle.replace(reg, nextStyles[i]);
-    }
-    style.textContent = curStyle;
-}
-
-if (interval > 0) {
-    setInterval(setNextStyles, interval * 1000);
-}
-
-setNextStyles();
-`;
+    protected getCarousel(): TSectionCarousel | null {
+        const { images, interval, random } = this.curConfig;
+        if (!images.length) {
+            return null;
+        }
+        return {
+            kind: 'template',
+            template: this.styleTemplate,
+            placeholder: this.cssPlaceholder,
+            imageStyles: this.imageStyles,
+            interval,
+            random
+        };
     }
 }

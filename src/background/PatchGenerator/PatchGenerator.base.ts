@@ -46,6 +46,37 @@ export function css(template: TemplateStringsArray, ...args: any[]) {
     }, '');
 }
 
+/**
+ * How a section rotates its images. Read by the runtime injected in workbench.html (PatchGenerator.runtime.ts).
+ */
+export type TSectionCarousel = {
+    interval: number;
+    random: boolean;
+} & (
+    | {
+          /** one css text per image, only one is active at a time */
+          kind: 'rules';
+          rules: string[];
+      }
+    | {
+          /** every image is shown at once, rotating which split view gets which image */
+          kind: 'template';
+          template: string;
+          placeholder: string;
+          imageStyles: string[];
+      }
+);
+
+/**
+ * Plain data for one background section, so the runtime can apply it without new code (live updates).
+ */
+export type TSectionData = TSectionCarousel & {
+    /** images to preload, empty when there are too many */
+    preload: string[];
+    /** static css of the section */
+    style: string;
+};
+
 export class AbsPatchGenerator<T extends { images: string[] }> {
     protected config: T;
 
@@ -211,6 +242,32 @@ container.appendChild(div);
 
     protected getScript() {
         return '';
+    }
+
+    protected getCarousel(): TSectionCarousel | null {
+        return null;
+    }
+
+    /**
+     * Section as data, `null` when it has nothing to show.
+     */
+    public createSection(): TSectionData | null {
+        const images = this.config.images.filter(n => n.length);
+        if (this.imageRequired && !images.length) {
+            return null;
+        }
+
+        const carousel = this.getCarousel();
+        if (!carousel) {
+            return null;
+        }
+
+        return {
+            // 10个以内图片，做预加载进行优化
+            preload: images.length <= 10 ? images : [],
+            style: this.compileCSS(this.getStyle()),
+            ...carousel
+        };
     }
 
     public create() {
