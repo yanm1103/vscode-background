@@ -1,3 +1,12 @@
+## v3.3.0 (2026/11/04) — fork
+
+Fork of [shalldie/vscode-background](https://github.com/shalldie/vscode-background) v3.1.0.
+
+- feat: per-project backgrounds. `background.*` settings in a project's `.vscode/settings.json` or `.code-workspace` apply only to that project, and windows of different projects can be open at the same time.
+- feat: live updates. Settings apply without reloading: `workbench.html` gets a fixed script that reads `~/.vscode-background/state.svg` every 2 seconds. code-server keeps the reload flow.
+- feat: `Background: Forget per-project backgrounds` command.
+- chore: extension ID changed to `twistzero.background`, so the Marketplace does not replace the fork.
+
 ## v3.1.0 (2026/09/11)
 
 - fix: avoid corrupting CSP directives when injecting inline script support by @Moli13337 in [#631](https://github.com/shalldie/vscode-background/pull/631)

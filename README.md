@@ -19,7 +19,7 @@
 
 [GitHub](https://github.com/shalldie/vscode-background) | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
+[![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](./CHANGELOG.md)
 [![Stars](https://img.shields.io/github/stars/shalldie/vscode-background?logo=github&style=flat-square)](https://github.com/shalldie/vscode-background)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/shalldie/vscode-background/ci.yml?branch=master&label=build&style=flat-square)](https://github.com/shalldie/vscode-background/actions)
 [![License](https://img.shields.io/github/license/shalldie/vscode-background?style=flat-square)](https://github.com/shalldie/vscode-background)
@@ -38,12 +38,26 @@ Multiple sections, `editor`, `sidebar`, `auxiliarybar`, `panel`
 
 <!-- 封面区域 end -->
 
+> [!NOTE]
+> This is a fork of [shalldie/vscode-background](https://github.com/shalldie/vscode-background).
+> It adds **per-project backgrounds** and **live updates**: each project can have its own background, and changing a setting no longer reloads the window.
+> See [Per-project backgrounds](#per-project-backgrounds).
+
 ## Installation
 
-There are 2 ways to install this extension:
+The fork is not on the Marketplace. Build it and install the `.vsix`:
 
-1. Install from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background).
-2. Search `shalldie.background` from vscode.
+```bash
+npm install
+npm run package          # creates background-<version>.vsix
+code --install-extension background-<version>.vsix
+```
+
+If the original extension is installed, uninstall it first (`code --uninstall-extension shalldie.background`). Both use the same `background.*` settings and would overwrite each other's patch.
+
+The fork's ID is `twistzero.background`, so the Marketplace never replaces it with the original during an auto-update.
+
+Then run `Developer: Reload Window` and click **Apply and Reload** when asked.
 
 ## Custom
 
@@ -54,6 +68,52 @@ User defined requirements can be met by changing the configuration(`settings.jso
 ## Config
 
 <img width="760" src="./images/containers.webp">
+
+### Per-project backgrounds
+
+Put any `background.*` setting in a project's `.vscode/settings.json` (or in a `.code-workspace` file) to give that project its own background. Projects without one use your user settings.
+
+```jsonc
+// <project>/.vscode/settings.json
+{
+    "background.fullscreen": {
+        "images": ["C:/Users/me/Pictures/this-project.png"]
+    }
+}
+```
+
+- Windows of different projects can be open at the same time, each with its own background.
+- Project values merge over the user values, like VS Code settings do. In the example above, the project keeps the user `opacity`, `size` and other options.
+- `"background.enabled": false` in a project turns off only that project. The user setting stays the main switch.
+- `Background: Forget per-project backgrounds` clears every remembered project. Projects whose folder was deleted are dropped automatically.
+
+### Live updates
+
+Settings apply without reloading. Open windows redraw within about 2 seconds of saving `settings.json`. Minimized windows catch up when they are shown again.
+
+**Apply and Reload** is still needed:
+
+- after installing or updating the extension;
+- after a VS Code update, because the update restores the original `workbench.html`.
+
+On code-server the window cannot read the state file, so there the extension keeps the original flow: every change needs **Apply and Reload**.
+
+### How it works
+
+The original extension writes the images straight into VS Code's `workbench.html`, a single file shared by every window. That is why its background is global.
+
+The fork writes only a fixed script into `workbench.html`. The backgrounds live in `~/.vscode-background/`:
+
+| File                      | Content                                                                        |
+| :------------------------ | :----------------------------------------------------------------------------- |
+| `workspace-profiles.json` | The `background.*` settings of every project opened so far.                    |
+| `state.svg`               | The styles of every background, for all projects. JSON despite the extension. |
+
+Each window asks VS Code which folder or `.code-workspace` it has open and draws the matching background from `state.svg`. When a setting changes, the extension rewrites `state.svg` and every visible window picks it up on its next check, every 2 seconds.
+
+`state.svg` uses the `.svg` extension because VS Code windows may only read files outside VS Code's own folders when they are images.
+
+Use `Background: [Dev] Preview Patch` to see the injected script and the current state.
 
 ### Global Config
 

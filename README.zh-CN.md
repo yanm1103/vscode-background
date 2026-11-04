@@ -19,7 +19,7 @@
 
 [GitHub](https://github.com/shalldie/vscode-background) | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
+[![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](./CHANGELOG.md)
 [![Stars](https://img.shields.io/github/stars/shalldie/vscode-background?logo=github&style=flat-square)](https://github.com/shalldie/vscode-background)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/shalldie/vscode-background/ci.yml?branch=master&label=build&style=flat-square)](https://github.com/shalldie/vscode-background/actions)
 [![License](https://img.shields.io/github/license/shalldie/vscode-background?style=flat-square)](https://github.com/shalldie/vscode-background)
@@ -35,6 +35,10 @@
 </div>
 
 <!-- 封面区域 end -->
+
+> [!NOTE]
+> 这是 [shalldie/vscode-background](https://github.com/shalldie/vscode-background) 的分支（fork），新增了**按项目设置背景**和**无需重载的实时更新**。
+> 详情见 [英文 README](./README.md#per-project-backgrounds)。
 
 ## 安装
 
