@@ -8,5 +8,9 @@
     "Background will be disabled.": "Background will be disabled.",
     "Configuration has been changed, click to apply.": "Configuration has been changed, click to apply.",
     "Apply and Reload": "Apply and Reload",
-    "Disable and Reload": "Disable and Reload"
+    "Disable and Reload": "Disable and Reload",
+    "Open a folder or workspace first.": "Open a folder or workspace first.",
+    "Which part of the window gets the background?": "Which part of the window gets the background?",
+    "Select the images (cancel to leave the list empty)": "Select the images (cancel to leave the list empty)",
+    "This project already has `background.{section}` settings.": "This project already has `background.{section}` settings."
 }

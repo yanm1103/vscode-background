@@ -1,8 +1,7 @@
 {
-    "extension.background.command.clearWorkspaceProfiles.title": "Forget per-project backgrounds",
+    "extension.background.command.addProjectSettings.title": "Add background settings to this project",
     "extension.background.command.info.title": "Welcome to background.",
     "extension.background.command.install.title": "Enable and apply the background.",
-    "extension.background.command.disable.title": "Disable the background.",
     "extension.background.command.uninstall.title": "Uninstall the extension.",
 
     "extension.background.enabled.description": "Whether to enable background extension.",
@@ -19,6 +18,7 @@
     "extension.background.fullscreen.opacity": "Opacity of the images, alias to [opacity](https://developer.mozilla.org/docs/Web/CSS/opacity),\n\n`0.1 ~ 0.3` recommended, it will be reset to the default `0.1` if exceeds the limit range `0 ~ 0.6`.",
     "extension.background.fullscreen.size": "Alias to [background-size](https://developer.mozilla.org/docs/Web/CSS/background-size), `cover` to self-adaption (recommended).",
     "extension.background.fullscreen.position": "Alias to [background-position](https://developer.mozilla.org/docs/Web/CSS/background-position), default `center`.",
+    "extension.background.fullscreen.style": "Custom style, applied over `size`, `position` and `opacity` (e.g. `background-size`). [MDN Reference](https://developer.mozilla.org/docs/Web/CSS)",
     "extension.background.fullscreen.interval": "Seconds of interval for carousel, default `0` to disabled.",
     "extension.background.fullscreen.random": "Whether to randomly display images.",
 

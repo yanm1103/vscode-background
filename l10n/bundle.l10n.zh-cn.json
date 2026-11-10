@@ -8,5 +8,9 @@
     "Background will be disabled.": "Background 会被禁用。",
     "Configuration has been changed, click to apply.": "配置已改变，点击应用。",
     "Apply and Reload": "应用并重载",
-    "Disable and Reload": "禁用并重载"
+    "Disable and Reload": "禁用并重载",
+    "Open a folder or workspace first.": "请先打开一个文件夹或工作区。",
+    "Which part of the window gets the background?": "背景应用到窗口的哪个部分？",
+    "Select the images (cancel to leave the list empty)": "选择图片（取消则保留空列表）",
+    "This project already has `background.{section}` settings.": "当前项目已有 `background.{section}` 配置。"
 }

@@ -67,14 +67,14 @@
 
 通过 `background.editor` 设置编辑器区域配置。
 
-| 名称       |    类型    |    默认值    | 描述                                                   |
-| :--------- | :--------: | :----------: | :----------------------------------------------------- |
-| `useFront` | `boolean`  |    `true`    | 把图片放在代码的上方或下方。                           |
-| `style`    |  `object`  |     `{}`     | 自定义图片样式。 [MDN Reference][mdn-css]              |
-| `styles`   | `object[]` |     `[]`     | 为每一张图片单独自定义样式。                           |
-| `images`   | `string[]` |     `[]`     | 自定义图片，支持在线和本地图片，以及文件夹。           |
-| `interval` |  `number`  |     `0`      | 单位 `秒`，轮播时候图片切换间隔，默认 `0` 表示不开启。 |
-| `random`   | `boolean`  |   `false`    | 是否随机展示图片。                                     |
+| 名称       |    类型    | 默认值  | 描述                                                   |
+| :--------- | :--------: | :-----: | :----------------------------------------------------- |
+| `useFront` | `boolean`  | `true`  | 把图片放在代码的上方或下方。                           |
+| `style`    |  `object`  |  `{}`   | 自定义图片样式。 [MDN Reference][mdn-css]              |
+| `styles`   | `object[]` |  `[]`   | 为每一张图片单独自定义样式。                           |
+| `images`   | `string[]` |  `[]`   | 自定义图片，支持在线和本地图片，以及文件夹。           |
+| `interval` |  `number`  |   `0`   | 单位 `秒`，轮播时候图片切换间隔，默认 `0` 表示不开启。 |
+| `random`   | `boolean`  | `false` | 是否随机展示图片。                                     |
 
 [mdn-css]: https://developer.mozilla.org/docs/Web/CSS
 
@@ -117,15 +117,16 @@ example:
 
 通过 `background.fullscreen`、`background.sidebar`、`background.auxiliarybar`、`background.panel` 来进行这些区域的配置。
 
-| 名称       |    类型    |  默认值  | 描述                                                                         |
-| :--------- | :--------: | :------: | :--------------------------------------------------------------------------- |
-| `images`   | `string[]` |   `[]`   | 自定义图片，支持在线和本地图片，以及文件夹。                                 |
-| `opacity`  |  `number`  |  `0.1`   | 透明度，等同 css [opacity][mdn-opacity]，建议 `0.1 ~ 0.3`。                  |
-| `size`     |  `string`  | `cover`  | 等同 css [background-size][mdn-background-size], 建议使用 `cover` 来自适应。 |
-| `position` |  `string`  | `center` | 等同 css [background-position][mdn-background-position]， 默认值 `center`。  |
-| `styles`   | `object[]` |   `[]`   | 为每一张图片单独自定义样式。                                                |
-| `interval` |  `number`  |   `0`    | 单位 `秒`，轮播时候图片切换间隔，默认 `0` 表示不开启。                       |
-| `random`   | `boolean`  | `false`  | 是否随机展示图片。                                                           |
+| 名称       |    类型    |  默认值  | 描述                                                                                  |
+| :--------- | :--------: | :------: | :------------------------------------------------------------------------------------ |
+| `images`   | `string[]` |   `[]`   | 自定义图片，支持在线和本地图片，以及文件夹。                                          |
+| `opacity`  |  `number`  |  `0.1`   | 透明度，等同 css [opacity][mdn-opacity]，建议 `0.1 ~ 0.3`。                           |
+| `size`     |  `string`  | `cover`  | 等同 css [background-size][mdn-background-size], 建议使用 `cover` 来自适应。          |
+| `position` |  `string`  | `center` | 等同 css [background-position][mdn-background-position]， 默认值 `center`。           |
+| `style`    |  `object`  |   `{}`   | 自定义所有图片的样式，会覆盖 `size`、`position`、`opacity`。 [MDN Reference][mdn-css] |
+| `styles`   | `object[]` |   `[]`   | 为每一张图片单独自定义样式。                                                          |
+| `interval` |  `number`  |   `0`    | 单位 `秒`，轮播时候图片切换间隔，默认 `0` 表示不开启。                                |
+| `random`   | `boolean`  | `false`  | 是否随机展示图片。                                                                    |
 
 [mdn-opacity]: https://developer.mozilla.org/docs/Web/CSS/opacity
 [mdn-background-size]: https://developer.mozilla.org/docs/Web/CSS/background-size

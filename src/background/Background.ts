@@ -4,11 +4,12 @@ import path from 'node:path';
 import vscode, { type Disposable, l10n } from 'vscode';
 
 import { _ } from '../utils';
+import { writeFileAtomic } from '../utils/atomicFile';
 import { DATA_DIR, ENCODING, EXT_ROOT, EXTENSION_NAME, TOUCH_FILE_PATH, VERSION } from '../utils/constants';
 import { getLegacyJsPath, getWorkbenchHtmlPath } from '../utils/patchTargets';
 import { vsHelp } from '../utils/vsHelp';
 import { EFilePatchType, HtmlPatchFile, JsPatchFile } from './PatchFile';
-import { PatchGenerator, type TPatchGeneratorConfig } from './PatchGenerator';
+import { getImageFolders, PatchGenerator, type TPatchGeneratorConfig } from './PatchGenerator';
 import {
     CONFIG_KEYS,
     getCurrentWorkspace,
@@ -37,7 +38,15 @@ export class Background implements Disposable {
     private legacyJsFile = new JsPatchFile(getLegacyJsPath());
 
     /** Workspace overrides of every project, shared by all windows */
-    private profiles = new WorkspaceProfiles(path.join(DATA_DIR, 'workspace-profiles.json'));
+    private profiles = new WorkspaceProfiles(
+        path.join(DATA_DIR, 'profiles'),
+        path.join(DATA_DIR, 'workspace-profiles.json')
+    );
+
+    /** Watchers of the image folders this window draws, a new or removed image rewrites the state */
+    private folderWatchers: Disposable[] = [];
+
+    private refreshTimer?: NodeJS.Timeout;
 
     /**
      * Backgrounds of every window, polled by the patch for live updates.
@@ -132,12 +141,75 @@ export class Background implements Disposable {
         }
         try {
             fs.mkdirSync(DATA_DIR, { recursive: true });
-            const content = JSON.stringify(this.createState());
-            // skip identical writes, every window writes on config changes
-            if (fs.existsSync(this.stateFilePath) && fs.readFileSync(this.stateFilePath, ENCODING) === content) {
-                return;
+            // another window may save its profile while this one builds the state and then
+            // get its newer state overwritten, so check the profiles again after writing
+            for (let pass = 0; pass < 2; pass++) {
+                const profiles = JSON.stringify(this.profiles.read());
+                const content = JSON.stringify(this.createState());
+                // skip identical writes, every window writes on config changes
+                if (this.readStateFile() !== content) {
+                    writeFileAtomic(this.stateFilePath, content);
+                }
+                if (JSON.stringify(this.profiles.read()) === profiles) {
+                    return;
+                }
             }
-            fs.writeFileSync(this.stateFilePath, content, ENCODING);
+        } catch {}
+    }
+
+    private readStateFile() {
+        try {
+            return fs.readFileSync(this.stateFilePath, ENCODING);
+        } catch {
+            return undefined;
+        }
+    }
+
+    private disposeFolderWatchers() {
+        clearTimeout(this.refreshTimer);
+        this.folderWatchers.forEach(n => n.dispose());
+        this.folderWatchers = [];
+    }
+
+    /**
+     * Image folders are expanded to their files when the state is written, so watch the ones
+     * this window draws. Folders of other projects are watched by their own windows.
+     */
+    private watchImageFolders() {
+        this.disposeFolderWatchers();
+
+        const globalConfig = this.globalConfig;
+        // same config the window draws: the profile of its workspace, or the global one
+        const config = getCurrentWorkspace() ? mergeConfig(globalConfig, this.workspaceOverrides) : globalConfig;
+        if (!this.liveUpdate || !globalConfig.enabled || config.enabled === false) {
+            return;
+        }
+
+        const folders = new Set(
+            [config.editor, config.sidebar, config.auxiliarybar, config.panel, config.fullscreen]
+                .flatMap(section => getImageFolders(section?.images))
+                // `file://` and relative folders are not found by the glob either
+                .filter(folder => path.isAbsolute(folder))
+                .map(folder => path.normalize(folder).replace(/[\\/]+$/, ''))
+        );
+
+        // many events (copying a folder) end in a single write, after the last file is complete
+        const refresh = () => {
+            clearTimeout(this.refreshTimer);
+            this.refreshTimer = setTimeout(() => this.writeState(), 1000);
+        };
+
+        try {
+            for (const folder of folders) {
+                // VS Code's watcher is recursive on every platform and waits for folders that do not exist yet
+                const watcher = vscode.workspace.createFileSystemWatcher(
+                    new vscode.RelativePattern(vscode.Uri.file(folder), '**/*')
+                );
+                watcher.onDidCreate(refresh);
+                watcher.onDidChange(refresh);
+                watcher.onDidDelete(refresh);
+                this.folderWatchers.push(watcher);
+            }
         } catch {}
     }
 
@@ -226,6 +298,7 @@ export class Background implements Disposable {
         this.syncWorkspaceProfile();
         // live update: open windows redraw from the new state (or clear it when disabled)
         this.writeState();
+        this.watchImageFolders();
 
         const hasInstalled = await this.hasInstalled();
         // global switch, a workspace can only turn its own background off
@@ -233,13 +306,19 @@ export class Background implements Disposable {
 
         // 禁用
         if (!enabled) {
-            if (hasInstalled) {
-                vsHelp.reload({
-                    message: l10n.t('Background will be disabled.'),
-                    btnReload: l10n.t('Disable and Reload'),
-                    beforeReload: () => this.uninstall()
-                });
+            if (!hasInstalled) {
+                return;
             }
+            // the empty state already cleared the background, the patch only has to leave workbench.html
+            if (this.liveUpdate) {
+                await this.uninstall();
+                return;
+            }
+            vsHelp.reload({
+                message: l10n.t('Background will be disabled.'),
+                btnReload: l10n.t('Disable and Reload'),
+                beforeReload: () => this.uninstall()
+            });
             return;
         }
 
@@ -269,12 +348,60 @@ export class Background implements Disposable {
     }
 
     /**
-     * Forgets the background of every project, keeping only the global one.
+     * Applies the patch.
+     *
+     * @returns whether the window has to be reloaded to run it, `false` when it is already running
+     * or could not be written
      */
-    public async clearWorkspaceProfiles() {
-        this.profiles.clear();
-        this.syncWorkspaceProfile();
-        return this.applyPatch();
+    public async install(): Promise<boolean> {
+        const upToDate = this.liveUpdate && (await this.hasInstalled()) && (await this.isPatchUpToDate());
+        const patchApplied = await this.applyPatch();
+        return patchApplied !== false && !upToDate;
+    }
+
+    /**
+     * Writes starting `background.*` settings to the project open in this window
+     * (`.vscode/settings.json` or the `.code-workspace`, created by VS Code when missing) and opens the file.
+     */
+    public async addProjectSettings() {
+        if (!vscode.workspace.workspaceFolders?.length) {
+            vscode.window.showWarningMessage(l10n.t('Open a folder or workspace first.'));
+            return;
+        }
+
+        const section = await vscode.window.showQuickPick(
+            ['fullscreen', 'editor', 'sidebar', 'panel', 'auxiliarybar'],
+            {
+                placeHolder: l10n.t('Which part of the window gets the background?')
+            }
+        );
+        if (!section) {
+            return;
+        }
+
+        const config = this.config;
+        const info = config.inspect<Record<string, unknown>>(section);
+        if (info?.workspaceValue !== undefined) {
+            // keep what the project already has, just show it
+            vscode.window.showInformationMessage(
+                l10n.t('This project already has `background.{section}` settings.', { section })
+            );
+        } else {
+            const picked = await vscode.window.showOpenDialog({
+                title: l10n.t('Select the images (cancel to leave the list empty)'),
+                canSelectMany: true,
+                filters: { Images: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'] }
+            });
+            const images = (picked ?? []).map(uri => uri.fsPath.replace(/\\/g, '/'));
+            // every option with its default, so they are all there to be edited
+            await config.update(
+                section,
+                { style: {}, ...info?.defaultValue, images },
+                vscode.ConfigurationTarget.Workspace
+            );
+        }
+
+        await vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile');
     }
 
     public async previewPatch() {
@@ -303,6 +430,7 @@ export class Background implements Disposable {
 
         this.syncWorkspaceProfile();
         this.writeState();
+        this.watchImageFolders();
 
         const patchType = await this.htmlFile.getPatchType();
 
@@ -380,6 +508,7 @@ export class Background implements Disposable {
      */
     public dispose(): void {
         this.disposables.forEach(n => n.dispose());
+        this.disposeFolderWatchers();
     }
 
     // #endregion

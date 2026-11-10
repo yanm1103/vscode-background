@@ -32,92 +32,128 @@ const stateUrl = ${JSON.stringify(stateUrl ?? '')};
 const initialState = ${JSON.stringify(initialState ?? null)};
 const pollInterval = ${POLL_INTERVAL_MS};
 
-let active = { nodes: [], timers: [] };
-let lastProfile = null;
+// one long-lived entry per section, so a settings change updates it in place
+// instead of restarting every carousel
+const entries = new Map();
+let lastState = null;
 let workspaceKey = null;
 
-function clear() {
-    active.nodes.forEach(node => node.remove());
-    active.timers.forEach(timer => clearInterval(timer));
-    active = { nodes: [], timers: [] };
+// writing '' over css does not reach floating windows (VS Code only syncs added text),
+// sections without css are removed instead (see render)
+function setText(node, text) {
+    if (node.textContent !== text) {
+        node.textContent = text;
+    }
 }
 
-function addStyle(text) {
-    const style = document.createElement('style');
-    style.textContent = text;
-    document.head.appendChild(style);
-    active.nodes.push(style);
-    return style;
+function createEntry() {
+    const entry = {
+        // static css first, so the css of the current image overrides it
+        style: document.head.appendChild(document.createElement('style')),
+        frame: document.head.appendChild(document.createElement('style')),
+        preload: document.createElement('div'),
+        order: [],
+        index: 0,
+        timer: 0
+    };
+    entry.preload.style.cssText = 'width:0;height:0;opacity:0;overflow:hidden';
+    entry.preload.appendChild(document.createElement('div'));
+    document.body.appendChild(entry.preload);
+    return entry;
 }
 
-function preload(images) {
-    if (!images || !images.length) {
+function removeEntry(entry) {
+    clearInterval(entry.timer);
+    entry.style.remove();
+    entry.frame.remove();
+    entry.preload.remove();
+}
+
+function shuffle(list) {
+    for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+}
+
+// Draws the current images of a section, moving to the next ones when 'advance' is set.
+// 'order' holds the image shown ('rules') or the image of each split view ('template').
+function draw(entry, advance) {
+    const data = entry.data;
+    const isRules = data.kind === 'rules';
+    const list = (isRules ? data.rules : data.imageStyles) || [];
+    const count = list.length;
+    if (!count) {
         return;
     }
-    const container = document.createElement('div');
-    container.style.width = 0;
-    container.style.height = 0;
-    container.style.opacity = 0;
-    container.style.overflow = 'hidden';
-    const div = document.createElement('div');
-    div.style.backgroundImage = images.map(url => 'url(' + url + ')').join(',');
-    container.appendChild(div);
-    document.body.appendChild(container);
-    active.nodes.push(container);
-}
 
-function startCarousel(section, render) {
-    render();
-    if (section.interval > 0) {
-        active.timers.push(setInterval(render, section.interval * 1000));
-    }
-}
-
-function startRules(section) {
-    const style = addStyle('');
-    const rules = section.rules;
-    let index = -1;
-    startCarousel(section, () => {
-        if (section.random) {
-            style.textContent = rules[Math.floor(Math.random() * rules.length)];
-            return;
-        }
-        index = (index + 1) % rules.length;
-        style.textContent = rules[index];
-    });
-}
-
-function startTemplate(section) {
-    const style = addStyle('');
-    const imageStyles = section.imageStyles;
-    let index = -1;
-    startCarousel(section, () => {
-        let order;
-        if (section.random) {
-            order = imageStyles.slice().sort(() => Math.random() - 0.5);
+    // other images or mode: start over, like a window that just loaded
+    const reset = entry.count !== count || entry.random !== data.random;
+    if (reset || advance) {
+        entry.index = reset ? 0 : (entry.index + 1) % count;
+        entry.count = count;
+        entry.random = data.random;
+        if (data.random) {
+            entry.order = isRules ? [Math.floor(Math.random() * count)] : shuffle(list.map((_s, i) => i));
         } else {
-            index = (index + 1) % imageStyles.length;
-            order = imageStyles.map((_s, i) => imageStyles[(index + i) % imageStyles.length]);
+            entry.order = list.map((_s, i) => (entry.index + i) % count);
         }
-        let css = section.template;
-        for (let i = 0; i < order.length; i++) {
-            css = css.replace(new RegExp(section.placeholder + i + '[^;]+;', 'g'), order[i]);
+    }
+
+    if (isRules) {
+        setText(entry.frame, list[entry.order[0]]);
+        return;
+    }
+    let css = data.template;
+    for (let i = 0; i < count; i++) {
+        // the ':' keeps placeholder1 from matching placeholder10, the function keeps '$' in urls literal
+        css = css.replace(new RegExp(data.placeholder + i + ':[^;]+;', 'g'), () => list[entry.order[i]]);
+    }
+    setText(entry.frame, css);
+}
+
+function update(entry, data) {
+    entry.data = data;
+    setText(entry.style, data.style || '');
+    entry.preload.firstChild.style.backgroundImage = (data.preload || []).map(url => 'url(' + url + ')').join(',');
+
+    // the timer reads entry.data, it only restarts when the interval changes
+    const interval = data.interval > 0 ? data.interval : 0;
+    if (interval !== entry.interval) {
+        entry.interval = interval;
+        clearInterval(entry.timer);
+        entry.timer = interval ? setInterval(() => draw(entry, true), interval * 1000) : 0;
+        if (!interval) {
+            // stopped: back to the first image
+            entry.count = -1;
         }
-        style.textContent = css;
-    });
+    }
+    draw(entry, false);
 }
 
 function render(profile) {
-    clear();
-    ((profile && profile.sections) || []).forEach(section => {
-        preload(section.preload);
-        if (section.style) {
-            addStyle(section.style);
+    const seen = new Set();
+    ((profile && profile.sections) || []).forEach((section, i) => {
+        // states written by older versions have no id
+        const id = section.id || 's' + i;
+        seen.add(id);
+        let entry = entries.get(id);
+        if (!entry) {
+            entry = createEntry();
+            entries.set(id, entry);
         }
-        if (section.kind === 'rules' && section.rules.length) {
-            startRules(section);
-        } else if (section.kind === 'template' && section.imageStyles.length) {
-            startTemplate(section);
+        // untouched sections keep their image and timer
+        const text = JSON.stringify(section);
+        if (text !== entry.text) {
+            entry.text = text;
+            update(entry, section);
+        }
+    });
+    entries.forEach((entry, id) => {
+        if (!seen.has(id)) {
+            removeEntry(entry);
+            entries.delete(id);
         }
     });
 }
@@ -144,22 +180,22 @@ async function getWorkspaceKey() {
 async function apply(state) {
     const key = await getWorkspaceKey();
     const profiles = state.profiles || {};
-    const profile = Object.prototype.hasOwnProperty.call(profiles, key) ? profiles[key] : state.fallback;
-    // only redraw when this window's background changed, so carousels and transitions are not reset
-    const text = JSON.stringify(profile || null);
-    if (text === lastProfile) {
-        return;
-    }
-    lastProfile = text;
-    render(profile);
+    render(Object.prototype.hasOwnProperty.call(profiles, key) ? profiles[key] : state.fallback);
 }
 
 async function refresh() {
     try {
         const res = await fetch(stateUrl + '?t=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-            await apply(JSON.parse(await res.text()));
+        if (!res.ok) {
+            return;
         }
+        // most polls find the same file, skip parsing it
+        const text = await res.text();
+        if (text === lastState) {
+            return;
+        }
+        await apply(JSON.parse(text));
+        lastState = text;
     } catch {}
 }
 

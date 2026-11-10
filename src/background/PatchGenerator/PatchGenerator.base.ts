@@ -71,11 +71,50 @@ export type TSectionCarousel = {
  * Plain data for one background section, so the runtime can apply it without new code (live updates).
  */
 export type TSectionData = TSectionCarousel & {
+    /** which section it is (`editor`, `fullscreen`...), the runtime updates the section with the same id */
+    id: string;
     /** images to preload, empty when there are too many */
     preload: string[];
     /** static css of the section */
     style: string;
 };
+
+const isRemoteImage = (img: string) => ['http', 'data:'].some(prefix => img.startsWith(prefix));
+
+/** 文件，模糊判断。`.xxx` */
+const isImageFile = (img: string) => /\.[^\\/]+$/.test(img);
+
+/**
+ * 展开路径中的 `~`（用户目录）和环境变量（`${ENV}`、`$ENV`）
+ */
+function expandPathVariables(imagePath: string): string {
+    // 展开 ~ 为用户目录
+    if (imagePath.startsWith('~/')) {
+        imagePath = homedir() + imagePath.slice(1);
+    }
+
+    // 展开 ${ENV}
+    imagePath = imagePath.replace(/\$\{(\w+)\}/g, (match, name) => {
+        return process.env[name] !== undefined ? process.env[name] : match;
+    });
+    // 展开 $ENV
+    imagePath = imagePath.replace(/\$(\w+)/g, (match, name) => {
+        return process.env[name] !== undefined ? process.env[name] : match;
+    });
+
+    return imagePath;
+}
+
+/**
+ * Local folders among `images`. Their files are listed when the state is created,
+ * so they are watched to keep it fresh (see Background.watchImageFolders).
+ */
+export function getImageFolders(images: string[] = []): string[] {
+    return images
+        .filter(img => img.length && !isRemoteImage(img))
+        .map(expandPathVariables)
+        .filter(img => !isImageFile(img));
+}
 
 export class AbsPatchGenerator<T extends { images: string[] }> {
     protected config: T;
@@ -90,13 +129,12 @@ export class AbsPatchGenerator<T extends { images: string[] }> {
             images: images.flatMap(img => {
                 // ------ online images，`https://` ------
                 // ------ data URL，`data:image/png;base64,<BASE64_ENCODED_DATA>` ------
-                if (['http', 'data:'].some(prefix => img.startsWith(prefix))) {
+                if (isRemoteImage(img)) {
                     return [img];
                 }
                 // ------ local ------
-                img = this.expandPathVariables(img);
-                // 文件，模糊判断。`.xxx`
-                if (/\.[^\\/]+$/.test(img)) {
+                img = expandPathVariables(img);
+                if (isImageFile(img)) {
                     return this.normalizeImageUrls([img]);
                 }
                 // 文件夹
@@ -130,27 +168,6 @@ export class AbsPatchGenerator<T extends { images: string[] }> {
                 return '';
             }
         });
-    }
-
-    /**
-     * 展开路径中的 `~`（用户目录）和环境变量（`${ENV}`、`$ENV`）
-     */
-    private expandPathVariables(imagePath: string): string {
-        // 展开 ~ 为用户目录
-        if (imagePath.startsWith('~/')) {
-            imagePath = homedir() + imagePath.slice(1);
-        }
-
-        // 展开 ${ENV}
-        imagePath = imagePath.replace(/\$\{(\w+)\}/g, (match, name) => {
-            return process.env[name] !== undefined ? process.env[name] : match;
-        });
-        // 展开 $ENV
-        imagePath = imagePath.replace(/\$(\w+)/g, (match, name) => {
-            return process.env[name] !== undefined ? process.env[name] : match;
-        });
-
-        return imagePath;
     }
 
     /**
@@ -251,7 +268,7 @@ container.appendChild(div);
     /**
      * Section as data, `null` when it has nothing to show.
      */
-    public createSection(): TSectionData | null {
+    public createSection(id: string): TSectionData | null {
         const images = this.config.images.filter(n => n.length);
         if (this.imageRequired && !images.length) {
             return null;
@@ -263,6 +280,7 @@ container.appendChild(div);
         }
 
         return {
+            id,
             // 10个以内图片，做预加载进行优化
             preload: images.length <= 10 ? images : [],
             style: this.compileCSS(this.getStyle()),

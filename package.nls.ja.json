@@ -1,8 +1,7 @@
 {
-    "extension.background.command.clearWorkspaceProfiles.title": "プロジェクトごとの背景をすべて削除",
+    "extension.background.command.addProjectSettings.title": "このプロジェクトに背景設定を追加",
     "extension.background.command.info.title": "backgroundへようこそ。",
     "extension.background.command.install.title": "有効にして適用「Background」 を有効にして適用",
-    "extension.background.command.disable.title": "「Background」を無効にする。",
     "extension.background.command.uninstall.title": "拡張機能をアンインストール",
 
     "extension.background.enabled.description": "拡張機能の有効化を制御します",
@@ -19,6 +18,7 @@
     "extension.background.fullscreen.opacity": "画像の不透明度（opacity）を制御します、[opacity][mdn-opacity]へのエイリアスです。\n\n推奨値`0.1～0.3`，制限範囲`0～0.6`を超えると、デフォルト値`0.1`にリセットされます。",
     "extension.background.fullscreen.size": "[background-size](https://developer.mozilla.org/docs/Web/CSS/background-size)へのエイリアスです。推奨`cover`，縦横比を保ったまま領域を覆います。",
     "extension.background.fullscreen.position": "[background-position](https://developer.mozilla.org/docs/Web/CSS/background-position)へのエイリアスです。デフォルト値は`center`です。",
+    "extension.background.fullscreen.style": "カスタムCSS。`size`、`position`、`opacity` より優先されます（例: `background-size`）。 [MDN Reference](https://developer.mozilla.org/docs/Web/CSS)",
     "extension.background.fullscreen.interval": "次の画像を表示するまでの秒数を制御します。`0`の場合、画像は変更されません。",
     "extension.background.fullscreen.random": "画像の表示順をランダムにするかを制御します。",
 

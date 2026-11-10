@@ -1,8 +1,7 @@
 {
-    "extension.background.command.clearWorkspaceProfiles.title": "清除所有项目的背景配置",
+    "extension.background.command.addProjectSettings.title": "为当前项目添加背景配置",
     "extension.background.command.info.title": "欢迎使用 background 插件",
     "extension.background.command.install.title": "激活/应用插件",
-    "extension.background.command.disable.title": "禁用插件",
     "extension.background.command.uninstall.title": "卸载插件",
 
     "extension.background.enabled.description": "background 插件是否启用",
@@ -19,6 +18,7 @@
     "extension.background.fullscreen.opacity": "透明度，等同 css [opacity](https://developer.mozilla.org/docs/Web/CSS/opacity)，\n\n建议 `0.1 ~ 0.3`，超出限制范围 `0 ~ 0.6` 会重置为 `0.1`。",
     "extension.background.fullscreen.size": "等同 css [background-size](https://developer.mozilla.org/docs/Web/CSS/background-size), 建议使用 `cover` 来自适应。",
     "extension.background.fullscreen.position": "等同 css [background-position](https://developer.mozilla.org/docs/Web/CSS/background-position)， 默认值 `center`。",
+    "extension.background.fullscreen.style": "自定义样式，会覆盖 `size`、`position`、`opacity`（例如 `background-size`）。 [MDN Reference](https://developer.mozilla.org/docs/Web/CSS)",
     "extension.background.fullscreen.interval": "单位 `秒`，轮播时候图片切换间隔，默认 `0` 表示不开启。",
     "extension.background.fullscreen.random": "是否随机展示图片。",
 

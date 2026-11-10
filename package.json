@@ -64,19 +64,14 @@
         "title": "%extension.background.command.install.title%"
       },
       {
-        "command": "extension.background.disable",
-        "category": "Background",
-        "title": "%extension.background.command.disable.title%"
-      },
-      {
         "command": "extension.background.uninstall",
         "category": "Background",
         "title": "%extension.background.command.uninstall.title%"
       },
       {
-        "command": "extension.background.clearWorkspaceProfiles",
+        "command": "extension.background.addProjectSettings",
         "category": "Background",
-        "title": "%extension.background.command.clearWorkspaceProfiles.title%"
+        "title": "%extension.background.command.addProjectSettings.title%"
       },
       {
         "command": "extension.background.previewPatch",
@@ -185,6 +180,11 @@
               "default": "center",
               "markdownDescription": "%extension.background.fullscreen.position%"
             },
+            "style": {
+              "type": "object",
+              "default": {},
+              "markdownDescription": "%extension.background.fullscreen.style%"
+            },
             "styles": {
               "type": "array",
               "default": [],
@@ -227,6 +227,9 @@
             "position": {
               "$ref": "#/properties/background.fullscreen/properties/position"
             },
+            "style": {
+              "$ref": "#/properties/background.fullscreen/properties/style"
+            },
             "styles": {
               "$ref": "#/properties/background.fullscreen/properties/styles"
             },
@@ -263,6 +266,9 @@
             "position": {
               "$ref": "#/properties/background.fullscreen/properties/position"
             },
+            "style": {
+              "$ref": "#/properties/background.fullscreen/properties/style"
+            },
             "styles": {
               "$ref": "#/properties/background.fullscreen/properties/styles"
             },
@@ -298,6 +304,9 @@
             },
             "position": {
               "$ref": "#/properties/background.fullscreen/properties/position"
+            },
+            "style": {
+              "$ref": "#/properties/background.fullscreen/properties/style"
             },
             "styles": {
               "$ref": "#/properties/background.fullscreen/properties/styles"

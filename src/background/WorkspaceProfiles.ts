@@ -1,8 +1,10 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import vscode from 'vscode';
 
+import { writeFileAtomic } from '../utils/atomicFile';
 import { ENCODING } from '../utils/constants';
 import type { TPatchGeneratorConfig } from './PatchGenerator';
 
@@ -16,6 +18,8 @@ export type TConfigKey = (typeof CONFIG_KEYS)[number];
 export type TWorkspaceOverrides = Partial<TPatchGeneratorConfig>;
 
 type TProfileEntry = {
+    /** Workspace key, see toWorkspaceKey */
+    key: string;
     /** Local folder or .code-workspace file, used to drop profiles of projects that no longer exist. */
     fsPath?: string;
     overrides: TWorkspaceOverrides;
@@ -71,22 +75,95 @@ export function mergeConfig<T>(base: T, override: unknown): T {
 /**
  * Stores the workspace overrides of every project opened so far,
  * so a single patch can carry a background for each of them.
+ *
+ * One file per project: each window only writes the file of its own project,
+ * so windows saving at the same time cannot lose each other's changes.
  */
 export class WorkspaceProfiles {
-    constructor(private filePath: string) {}
+    private migrated = false;
 
-    public read(): Record<string, TProfileEntry> {
+    /**
+     * @param dirPath folder with one json file per project
+     * @param legacyFilePath single file with every project, used before. Moved into `dirPath` on first use.
+     */
+    constructor(
+        private dirPath: string,
+        private legacyFilePath: string
+    ) {}
+
+    private fileOf(key: string) {
+        // keys are uris, hash them into a valid file name
+        const name = crypto.createHash('sha1').update(key).digest('hex').slice(0, 16);
+        return path.join(this.dirPath, `${name}.json`);
+    }
+
+    private readEntry(filePath: string): TProfileEntry | undefined {
         try {
-            const data = JSON.parse(fs.readFileSync(this.filePath, ENCODING));
-            return isPlainObject(data) ? data : {};
+            const data = JSON.parse(fs.readFileSync(filePath, ENCODING));
+            return isPlainObject(data) && typeof data.key === 'string' && isPlainObject(data.overrides)
+                ? (data as TProfileEntry)
+                : undefined;
         } catch {
-            return {};
+            return undefined;
         }
     }
 
-    private write(profiles: Record<string, TProfileEntry>) {
-        fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-        fs.writeFileSync(this.filePath, JSON.stringify(profiles, null, 4), ENCODING);
+    private writeEntry(entry: TProfileEntry) {
+        fs.mkdirSync(this.dirPath, { recursive: true });
+        writeFileAtomic(this.fileOf(entry.key), JSON.stringify(entry, null, 4));
+    }
+
+    /**
+     * Copies the profiles of the legacy file that are not stored yet, then removes it.
+     * Safe to run in several windows at once: they all copy the same entries.
+     */
+    private migrate() {
+        if (this.migrated) {
+            return;
+        }
+        this.migrated = true;
+        try {
+            if (!fs.existsSync(this.legacyFilePath)) {
+                return;
+            }
+            const data = JSON.parse(fs.readFileSync(this.legacyFilePath, ENCODING));
+            for (const [key, entry] of Object.entries(isPlainObject(data) ? data : {})) {
+                if (isPlainObject(entry?.overrides) && !fs.existsSync(this.fileOf(key))) {
+                    this.writeEntry({ key, fsPath: entry.fsPath, overrides: entry.overrides });
+                }
+            }
+            fs.rmSync(this.legacyFilePath, { force: true });
+        } catch {
+            // file busy or unreadable, try again on the next use
+            this.migrated = false;
+        }
+    }
+
+    private listFiles() {
+        try {
+            return (
+                fs
+                    .readdirSync(this.dirPath)
+                    .filter(name => name.endsWith('.json'))
+                    // same order in every window, so they all write the same state
+                    .sort()
+                    .map(name => path.join(this.dirPath, name))
+            );
+        } catch {
+            return [];
+        }
+    }
+
+    public read(): Record<string, TProfileEntry> {
+        this.migrate();
+        const profiles: Record<string, TProfileEntry> = {};
+        for (const filePath of this.listFiles()) {
+            const entry = this.readEntry(filePath);
+            if (entry) {
+                profiles[entry.key] = entry;
+            }
+        }
+        return profiles;
     }
 
     /**
@@ -95,24 +172,23 @@ export class WorkspaceProfiles {
      * @returns whether the stored profiles changed
      */
     public set(key: string, fsPath: string | undefined, overrides: TWorkspaceOverrides): boolean {
-        const profiles = this.read();
-        const hasOverrides = Object.keys(overrides).length > 0;
-        const prev = profiles[key];
+        this.migrate();
+        const filePath = this.fileOf(key);
+        const prev = this.readEntry(filePath);
 
-        if (!hasOverrides) {
+        if (!Object.keys(overrides).length) {
             if (!prev) {
                 return false;
             }
-            delete profiles[key];
-        } else {
-            const next: TProfileEntry = { fsPath, overrides };
-            if (JSON.stringify(prev) === JSON.stringify(next)) {
-                return false;
-            }
-            profiles[key] = next;
+            fs.rmSync(filePath, { force: true });
+            return true;
         }
 
-        this.write(profiles);
+        const next: TProfileEntry = { key, fsPath, overrides };
+        if (JSON.stringify(prev) === JSON.stringify(next)) {
+            return false;
+        }
+        this.writeEntry(next);
         return true;
     }
 
@@ -120,29 +196,18 @@ export class WorkspaceProfiles {
      * Profiles merged on top of the global config. Projects whose folder was deleted are dropped.
      */
     public resolve(globalConfig: TPatchGeneratorConfig): Record<string, TPatchGeneratorConfig> {
-        const profiles = this.read();
         const result: Record<string, TPatchGeneratorConfig> = {};
-        let pruned = false;
 
-        for (const [key, entry] of Object.entries(profiles)) {
+        for (const [key, entry] of Object.entries(this.read())) {
             if (entry.fsPath && !fs.existsSync(entry.fsPath)) {
-                delete profiles[key];
-                pruned = true;
+                try {
+                    fs.rmSync(this.fileOf(key), { force: true });
+                } catch {}
                 continue;
             }
             result[key] = mergeConfig(globalConfig, entry.overrides);
         }
 
-        if (pruned) {
-            try {
-                this.write(profiles);
-            } catch {}
-        }
-
         return result;
-    }
-
-    public clear() {
-        this.write({});
     }
 }

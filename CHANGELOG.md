@@ -4,7 +4,8 @@ Fork of [shalldie/vscode-background](https://github.com/shalldie/vscode-backgrou
 
 - feat: per-project backgrounds. `background.*` settings in a project's `.vscode/settings.json` or `.code-workspace` apply only to that project, and windows of different projects can be open at the same time.
 - feat: live updates. Settings apply without reloading: `workbench.html` gets a fixed script that reads `~/.vscode-background/state.svg` every 2 seconds. code-server keeps the reload flow.
-- feat: `Background: Forget per-project backgrounds` command.
+- feat: `Background: Add background settings to this project` command.
+- chore: removed the `Background: Disable` command (set `background.enabled` to `false` instead). Turning the background off, and `Background: Install` when the patch is already current, no longer reload the window on desktop.
 - chore: extension ID changed to `twistzero.background`, so the Marketplace does not replace the fork.
 
 ## v3.1.0 (2026/09/11)

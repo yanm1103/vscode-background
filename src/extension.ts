@@ -36,16 +36,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.background.install', async () => {
             await background.config.update('enabled', true, true);
-            await background.applyPatch();
-            await vsHelp.reload();
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.background.disable', async () => {
-            await background.config.update('enabled', false, true);
-            await background.uninstall();
-            await vsHelp.reload();
+            // no reload when the window already runs the current patch
+            if (await background.install()) {
+                await vsHelp.reload();
+            }
         })
     );
 
@@ -60,11 +54,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.background.clearWorkspaceProfiles', async () => {
-            const patchApplied = await background.clearWorkspaceProfiles();
-            if (patchApplied !== false) {
-                await vsHelp.reload();
-            }
+        vscode.commands.registerCommand('extension.background.addProjectSettings', async () => {
+            await background.addProjectSettings();
         })
     );
 

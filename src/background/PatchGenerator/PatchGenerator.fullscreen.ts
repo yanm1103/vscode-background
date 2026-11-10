@@ -6,6 +6,8 @@ export class FullscreenPatchGeneratorConfig {
     opacity = 0.1; // 建议在 0.1 ~ 0.3
     size = 'cover' as 'cover' | 'contain';
     position = 'center';
+    /** Custom style for every image, applied over `size`, `position` and `opacity` (same as `editor.style`) */
+    style: Record<string, string> = {};
     styles: Array<Record<string, string>> = [];
     interval = 0;
     random = false;
@@ -30,7 +32,7 @@ export class FullscreenPatchGenerator<T extends FullscreenPatchGeneratorConfig> 
     }
 
     protected getStyle(): string {
-        const { size, position, opacity } = this.curConfig;
+        const { size, position, opacity, style } = this.curConfig;
 
         return css`
             ${this.selector} {
@@ -46,6 +48,8 @@ export class FullscreenPatchGenerator<T extends FullscreenPatchGeneratorConfig> 
                 opacity: ${opacity};
                 transition: 1s;
                 mix-blend-mode: var(${ThemePatchGenerator.cssMixBlendMode});
+                /* 自定义样式，覆盖上面的默认值 */
+                ${this.serializeStyle(style ?? {})}
             }
         `;
     }

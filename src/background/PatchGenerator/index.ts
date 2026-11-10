@@ -14,6 +14,7 @@ import {
 import { SidebarPatchGenerator, type SidebarPatchGeneratorConfig } from './PatchGenerator.sidebar';
 import { ThemePatchGenerator } from './PatchGenerator.theme';
 
+export { getImageFolders } from './PatchGenerator.base';
 export type { TBackgroundState } from './PatchGenerator.runtime';
 
 export type TPatchGeneratorConfig = {
@@ -35,11 +36,11 @@ export class PatchGenerator {
         }
 
         const sections = [
-            new EditorPatchGenerator(options.editor).createSection(), // editor,
-            new SidebarPatchGenerator(options.sidebar).createSection(), // sidebar
-            new AuxiliarybarPatchGenerator(options.auxiliarybar).createSection(), // auxiliarybar
-            new PanelPatchGenerator(options.panel).createSection(), // panel
-            new FullscreenPatchGenerator(options.fullscreen).createSection() // fullscreen
+            new EditorPatchGenerator(options.editor).createSection('editor'),
+            new SidebarPatchGenerator(options.sidebar).createSection('sidebar'),
+            new AuxiliarybarPatchGenerator(options.auxiliarybar).createSection('auxiliarybar'),
+            new PanelPatchGenerator(options.panel).createSection('panel'),
+            new FullscreenPatchGenerator(options.fullscreen).createSection('fullscreen')
         ].filter((n): n is TSectionData => !!n);
 
         return { sections };
