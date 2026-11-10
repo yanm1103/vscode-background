@@ -46,7 +46,9 @@ Multiple sections, `editor`, `sidebar`, `auxiliarybar`, `panel`
 
 ## Installation
 
-The fork is not on the Marketplace. Build it and install the `.vsix`:
+The fork is not on the Marketplace. Download `background-<version>.vsix` from the [latest release](https://github.com/yanm1103/vscode-background/releases/latest) and install it (`code --install-extension background-<version>.vsix`, or `Extensions: Install from VSIX...` in the command palette).
+
+Or build it yourself and install the `.vsix`:
 
 ```bash
 npm install
