@@ -1,8 +1,8 @@
 {
   "name": "background",
-  "displayName": "background (per-project fork)",
+  "displayName": "Background per Project",
   "version": "3.3.0",
-  "description": "Bring background images to your vscode",
+  "description": "A different background for every VS Code project, applied live without reloading",
   "categories": [
     "Other"
   ],
@@ -13,12 +13,12 @@
     "theme",
     "wallpaper"
   ],
-  "homepage": "https://github.com/shalldie/vscode-background#readme",
+  "homepage": "https://github.com/yanm1103/vscode-background#readme",
   "license": "MIT",
   "author": "shalldie",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shalldie/vscode-background.git"
+    "url": "https://github.com/yanm1103/vscode-background.git"
   },
   "publisher": "twistzero",
   "main": "./dist/extension",

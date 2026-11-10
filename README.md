@@ -11,18 +11,19 @@
 
 ![logo](./images/logo.png)
 
-<h1><b>vscode-background</b></h1>
+<h1><b>Background per Project</b></h1>
 
-### Bring background images to your [Visual Studio Code](https://code.visualstudio.com)
+### A different background for every [Visual Studio Code](https://code.visualstudio.com) project, applied live
 
 `fullscreen`, `editor`, `sidebar`, `auxiliarybar`, `panel`, `carousel`, `custom images/styles`...
 
-[GitHub](https://github.com/shalldie/vscode-background) | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
+Fork of [shalldie/vscode-background](https://github.com/shalldie/vscode-background) with per-project backgrounds and no reload when settings change.
+
+[GitHub](https://github.com/yanm1103/vscode-background) | [Original extension](https://github.com/shalldie/vscode-background)
 
 [![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](./CHANGELOG.md)
-[![Stars](https://img.shields.io/github/stars/shalldie/vscode-background?logo=github&style=flat-square)](https://github.com/shalldie/vscode-background)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/shalldie/vscode-background/ci.yml?branch=master&label=build&style=flat-square)](https://github.com/shalldie/vscode-background/actions)
-[![License](https://img.shields.io/github/license/shalldie/vscode-background?style=flat-square)](https://github.com/shalldie/vscode-background)
+[![Stars](https://img.shields.io/github/stars/yanm1103/vscode-background?logo=github&style=flat-square)](https://github.com/yanm1103/vscode-background)
+[![License](https://img.shields.io/github/license/yanm1103/vscode-background?style=flat-square)](https://github.com/yanm1103/vscode-background)
 
 Multiple sections, `editor`, `sidebar`, `auxiliarybar`, `panel`
 

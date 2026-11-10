@@ -11,18 +11,19 @@
 
 ![logo](./images/logo.png)
 
-<h1><b>vscode-background</b></h1>
+<h1><b>Background per Project</b></h1>
 
-### [Visual Studio Code](https://code.visualstudio.com) にも背景画像を。
+### [Visual Studio Code](https://code.visualstudio.com) のプロジェクトごとに違う背景を。変更はすぐに反映
 
 `フルスクリーン`、`エディター`、`サイドバー`、`補助バー(auxiliarybar)`、`パネル`、`画像の切り替わり`、`画像・CSSのカスタマイズ`...
 
-[GitHub](https://github.com/shalldie/vscode-background) | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
+[shalldie/vscode-background](https://github.com/shalldie/vscode-background) のフォーク。プロジェクトごとの背景に対応し、設定変更でウィンドウの再読み込みは不要です。
+
+[GitHub](https://github.com/yanm1103/vscode-background) | [オリジナルの拡張機能](https://github.com/shalldie/vscode-background)
 
 [![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](./CHANGELOG.md)
-[![Stars](https://img.shields.io/github/stars/shalldie/vscode-background?logo=github&style=flat-square)](https://github.com/shalldie/vscode-background)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/shalldie/vscode-background/ci.yml?branch=master&label=build&style=flat-square)](https://github.com/shalldie/vscode-background/actions)
-[![License](https://img.shields.io/github/license/shalldie/vscode-background?style=flat-square)](https://github.com/shalldie/vscode-background)
+[![Stars](https://img.shields.io/github/stars/yanm1103/vscode-background?logo=github&style=flat-square)](https://github.com/yanm1103/vscode-background)
+[![License](https://img.shields.io/github/license/yanm1103/vscode-background?style=flat-square)](https://github.com/yanm1103/vscode-background)
 
 複数の領域、`エディタ`、`サイドバー`、`補助バー(auxiliarybar)`、`パネル`
 

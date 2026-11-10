@@ -11,18 +11,19 @@
 
 ![logo](./images/logo.png)
 
-<h1><b>vscode-background</b></h1>
+<h1><b>Background per Project</b></h1>
 
-### 给 [Visual Studio Code](https://code.visualstudio.com) 添加背景
+### 给 [Visual Studio Code](https://code.visualstudio.com) 的每个项目设置不同的背景，修改后立即生效
 
 `全屏`、`编辑器`、`侧边栏`、`辅助栏(auxiliarybar)`、`面板`、`轮播`、`自定义图片/样式`...
 
-[GitHub](https://github.com/shalldie/vscode-background) | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=shalldie.background)
+[shalldie/vscode-background](https://github.com/shalldie/vscode-background) 的 fork，支持按项目设置背景，修改配置无需重载窗口。
+
+[GitHub](https://github.com/yanm1103/vscode-background) | [原版插件](https://github.com/shalldie/vscode-background)
 
 [![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](./CHANGELOG.md)
-[![Stars](https://img.shields.io/github/stars/shalldie/vscode-background?logo=github&style=flat-square)](https://github.com/shalldie/vscode-background)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/shalldie/vscode-background/ci.yml?branch=master&label=build&style=flat-square)](https://github.com/shalldie/vscode-background/actions)
-[![License](https://img.shields.io/github/license/shalldie/vscode-background?style=flat-square)](https://github.com/shalldie/vscode-background)
+[![Stars](https://img.shields.io/github/stars/yanm1103/vscode-background?logo=github&style=flat-square)](https://github.com/yanm1103/vscode-background)
+[![License](https://img.shields.io/github/license/yanm1103/vscode-background?style=flat-square)](https://github.com/yanm1103/vscode-background)
 
 多区域，`编辑器`、`侧边栏`、`辅助栏(auxiliarybar)`、`面板`
 
